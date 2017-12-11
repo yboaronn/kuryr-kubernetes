@@ -71,6 +71,12 @@ The Router's FIP could be retrieved from node annotation's as appears below.
         volumes.kubernetes.io/controller-managed-attach-detach: "true"
       creationTimestamp: 2017-11-17T19:52:54Z
 
+The next diagram illustrates data flow from external user to L7 loadbalancer:
+.. image:: ../../images/vif_handler_drivers_design.png
+    :alt: vif handler drivers design
+    :align: center
+    :width: 100%
+
     
 apiVersion: v1
 kind: Node
