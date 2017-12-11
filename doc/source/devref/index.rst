@@ -39,6 +39,7 @@ Design documents
     service_support
     port_manager
     vif_handler_drivers_design
+    l7_routing
 
 
 Indices and tables
