@@ -33,7 +33,7 @@ Proposed Solution
 -----------------
 An OpenShift/Kubernetes administrator can deploy L7 router in an OpenShift/Kubernetes cluster,
 which enable ingress/ocp-routes created by developers to be used by external clients.
-The Router should perfrom L7 routing layer based on L7 rules database, where the Ingress/OCP-Route
+The Router should perform L7 routing layer based on L7 rules database, where the Ingress/OCP-Route
 controllers are responsible for updating the L7 rules database.
 The layer 7 loadbalacing capability will be composed from :
 1. L7 Router
@@ -42,7 +42,7 @@ The layer 7 loadbalacing capability will be composed from :
 The L7 Router
 ~~~~~~~~~~~~~
 The L7 Router is based on neutron LbaaS L7 policy capability,
-L7 router is an extranlly reachable loadbalancer, for achieving external conenctivity
+L7 router is an externally reachable loadbalancer, for achieving external connectivity
 a floating IP (allocated from 'external_svc_subnet') is bounded to the Router loadbalancer.
 The following parameters should be configured in kuryr.conf file to enable L7 Router::
 
