@@ -72,6 +72,7 @@ The Router's FIP could be retrieved from node annotation's as appears below.
       creationTimestamp: 2017-11-17T19:52:54Z
 
 The next diagram illustrates data flow from external user to L7 loadbalancer:
+
 .. image:: ../../images/external_traffic_to_l7_router.svg
     :alt: external traffic to L7 loadbalancer
     :align: center
@@ -96,6 +97,7 @@ The L7 policy is configured to forward the filtered traffic to LbaaS Pool,
 This pool is pointing to all members of the specified kuberenets Endpoint.
 
 A diagram describing L7 routing entities is given below:
+
 .. image:: ../../images/l7_router_entities.svg
     :alt: L7 routing entities
     :align: center
