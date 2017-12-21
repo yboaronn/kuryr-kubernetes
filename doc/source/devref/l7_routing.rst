@@ -153,18 +153,6 @@ Create service/endpoint, ocp-route/ingress, delete ocp-route/ingress:
   * ocp-route is created
     * ocp-route details :
 
-.. code-block:: yaml
-
-    apiVersion: v1
-    kind: Route
-    metadata:
-      name: test
-    spec:
-      host: www.example.com
-      to:
-        kind: Service
-        name: s1
-
     * Since it's the first route pointing to this service, the ocp controller will
       create LbaaS pool (attached to L7 router)- let's call it s1_pool.
     * The ocp-route controller will create L7 rule and L7 policy, the L7 policy should direct it's filtered traffic
