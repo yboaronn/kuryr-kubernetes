@@ -111,7 +111,7 @@ Endpoint controller
 ~~~~~~~~~~~~~~~~~~~~~
 The Endpoint controller should be extended to support the flows involving
 route/ingress resources.
-The Endpoint controller should add/delete all it's members to the LbaaS pool mentioned above, in case
+The Endpoint controller should add/delete all it's members to/from the LbaaS pool mentioned above, in case
 a route/ingress is pointing this Endpoint as it's destination.
 
 The L7 router driver
