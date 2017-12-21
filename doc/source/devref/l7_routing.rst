@@ -138,8 +138,6 @@ Use cases examples
 ------------------
 This section describes the detailed flow of the following scenarios:
 
-  * Create service/endpoint with no ocp-route/ingress pointing to it.
-  * Create service/endpoint, ocp-route, delete ocp-route.
 
 References
 ==========
