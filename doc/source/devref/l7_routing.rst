@@ -128,11 +128,45 @@ A diagram describing L7 router entities is given below:
     :alt: L7 routing entities
     :align: center
     :width: 100%    
+Providers
+~~~~~~~~~
+Provider (Drivers) are used by ResourceEventHandlers to manage specific aspects
+of the Kubernetes resource in the OpenStack domain. For example, creating a Kubernetes Pod
+will require a neutron port to be created on a specific network with the proper
+security groups applied to it. There will be dedicated Drivers for Project,
+Subnet, Port and Security Groups settings in neutron. For instance, the Handler
+that processes pod events, will use PodVIFDriver, PodProjectDriver,
+PodSubnetsDriver and PodSecurityGroupsDriver. The Drivers model is introduced
+in order to allow flexibility in the Kubernetes model mapping to the OpenStack. There
+can be different drivers that do Neutron resources management, i.e. create on
+demand or grab one from the precreated pool. There can be different drivers for
+the Project management, i.e. single Tenant or multiple. Same goes for the other
+drivers. There are drivers that handle the Pod based on the project, subnet
+and security groups specified via configuration settings during cluster
+deployment phase.
+
+NeutronPodVifDriver
+~~~~~~~~~~~~~~~~~~~
+PodVifDriver subclass should implement request_vif, release_vif and
+activate_vif methods. In case request_vif returns Vif object in down state,
+Controller will invoke activate_vif.  Vif ‘active’ state is required by the
+CNI driver to complete pod handling.
+The NeutronPodVifDriver is the default driver that creates neutron port upon
+Pod addition and deletes port upon Pod removal.
 
 CNI Driver
 ----------
-This section describes the detailed flow of the following scenarios:
+Kuryr kubernetes integration takes advantage of the kubernetes `CNI plugin <http://kubernetes.io/docs/admin/network-plugins/#cni>`_
+and introduces Kuryr-K8s CNI Driver. Based on design decision, kuryr-kubernetes
+CNI Driver should get all information required to plug and bind Pod via
+kubernetes control plane and should not depend on Neutron. CNI plugin/driver
+is invoked in a blocking manner by kubelet (Kubernetes node agent), therefore it is
+expected to return when either success or error state determined.
 
+Kuryr-K8s CNI Driver has 2 sources for Pod binding information: kubelet/node
+environment and Kubernetes API. The Kuryr-K8s Controller Service and CNI share the
+contract that defines Pod annotation that Controller Server adds and CNI
+driver reads. The contract is `os_vif VIF <https://github.com/openstack/os-vif/blob/master/os_vif/objects/vif.py>`_
 
 References
 ==========
