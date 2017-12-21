@@ -156,7 +156,7 @@ The NeutronPodVifDriver is the default driver that creates neutron port upon
 Pod addition and deletes port upon Pod removal.
 
 CNI Driver
-----------
+~~~~~~~~~~
 Kuryr kubernetes integration takes advantage of the kubernetes `CNI plugin <http://kubernetes.io/docs/admin/network-plugins/#cni>`_
 and introduces Kuryr-K8s CNI Driver. Based on design decision, kuryr-kubernetes
 CNI Driver should get all information required to plug and bind Pod via
