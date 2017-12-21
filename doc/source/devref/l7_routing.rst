@@ -12,6 +12,26 @@
     '''''''  Heading 4
     (Avoid deeper levels because they do not render well.)
 
+==================================
+VIF-Handler And Vif Drivers Design
+==================================
+
+Purpose
+-------
+..
+    This work is licensed under a Creative Commons Attribution 3.0 Unported
+    License.
+
+    http://creativecommons.org/licenses/by/3.0/legalcode
+
+    Convention for heading levels in Neutron devref:
+    =======  Heading 0 (reserved for the title in a document)
+    -------  Heading 1
+    ~~~~~~~  Heading 2
+    +++++++  Heading 3
+    '''''''  Heading 4
+    (Avoid deeper levels because they do not render well.)
+
 =========================================================
 Kuryr Kubernetes ocp-route And Ingress Integration Design
 =========================================================
