@@ -70,7 +70,7 @@ The Router's FIP could be retrieved from node annotation's as appears below.
 
     metadata:
       annotations:
-        openstack.org/kuryr-l7-router-state: '{"versioned_object.data": {*"fip": "172.24.4.14"*,
+        openstack.org/kuryr-l7-router-state: '{"versioned_object.data": {**"fip": "172.24.4.14"**,
         "router_lb": {"versioned_object.data": {"id": "90732f0a-651a-4b17-a14e-9b0e01fbe774",
         "ip": "10.0.0.154", "name": "kuryr-l7-router", "port_id": "5c71a29a-0dc1-461e-81ee-2258a7e3842d",
         "project_id": "868307936d384c21824e5eb0425a3f42", "subnet_id": "9f6d8c9f-d22d-480e-80f5-867daa050ff8"},
@@ -120,89 +120,66 @@ The L7 router manager, ingress/ocp-route controllers and endpoint controller wil
 to create the L7 routing entities chain.
 The L7 router will rely on neutron LbaaS functionality.
 
-Note: Neutron LbaaS L7 functions are implemented *only* for the OCTAVIA provider, in case L7 routing is required
-the Neutron LbaaS must be configured to be OCTAVIA.
+**Note:** Neutron LbaaS L7 functions are implemented *only* for the OCTAVIA provider, in case L7 routing is required
+the Neutron LbaaS provider must be configured to be OCTAVIA.
 
 A diagram describing L7 router entities is given below:
+
 .. image:: ../../images/l7_routing_neutron_entities.svg
     :alt: L7 routing entities
     :align: center
     :width: 100%    
 
-Providers
-~~~~~~~~~
-Provider (Drivers) are used by ResourceEventHandlers to manage specific aspects
-of the Kubernetes resource in the OpenStack domain. For example, creating a Kubernetes Pod
-will require a neutron port to be created on a specific network with the proper
-security groups applied to it. There will be dedicated Drivers for Project,
-Subnet, Port and Security Groups settings in neutron. For instance, the Handler
-that processes pod events, will use PodVIFDriver, PodProjectDriver,
-PodSubnetsDriver and PodSecurityGroupsDriver. The Drivers model is introduced
-in order to allow flexibility in the Kubernetes model mapping to the OpenStack. There
-can be different drivers that do Neutron resources management, i.e. create on
-demand or grab one from the precreated pool. There can be different drivers for
-the Project management, i.e. single Tenant or multiple. Same goes for the other
-drivers. There are drivers that handle the Pod based on the project, subnet
-and security groups specified via configuration settings during cluster
-deployment phase.
+Use cases examples
+~~~~~~~~~~~~~~~~~~
+This section describes the detailed flow of the following scenarios:
 
-NeutronPodVifDriver
-~~~~~~~~~~~~~~~~~~~
-PodVifDriver subclass should implement request_vif, release_vif and
-activate_vif methods. In case request_vif returns Vif object in down state,
-Controller will invoke activate_vif.  Vif ‘active’ state is required by the
-CNI driver to complete pod handling.
-The NeutronPodVifDriver is the default driver that creates neutron port upon
-Pod addition and deletes port upon Pod removal.
+  * Create service/endpoint with no ocp-route/ingress pointing to it.
 
-CNI Driver
-~~~~~~~~~~
-Kuryr kubernetes integration takes advantage of the kubernetes `CNI plugin <http://kubernetes.io/docs/admin/network-plugins/#cni>`_
-and introduces Kuryr-K8s CNI Driver. Based on design decision, kuryr-kubernetes
-CNI Driver should get all information required to plug and bind Pod via
-kubernetes control plane and should not depend on Neutron. CNI plugin/driver
-is invoked in a blocking manner by kubelet (Kubernetes node agent), therefore it is
-expected to return when either success or error state determined.
+  * Create service/endpoint, ocp-route, delete ocp-route.
 
-Kuryr-K8s CNI Driver has 2 sources for Pod binding information: kubelet/node
-environment and Kubernetes API. The Kuryr-K8s Controller Service and CNI share the
-contract that defines Pod annotation that Controller Server adds and CNI
-driver reads. The contract is `os_vif VIF <https://github.com/openstack/os-vif/blob/master/os_vif/objects/vif.py>`_
 
-Providers
-~~~~~~~~~
-Provider (Drivers) are used by ResourceEventHandlers to manage specific aspects
-of the Kubernetes resource in the OpenStack domain. For example, creating a Kubernetes Pod
-will require a neutron port to be created on a specific network with the proper
-security groups applied to it. There will be dedicated Drivers for Project,
-Subnet, Port and Security Groups settings in neutron. For instance, the Handler
-that processes pod events, will use PodVIFDriver, PodProjectDriver,
-PodSubnetsDriver and PodSecurityGroupsDriver. The Drivers model is introduced
-in order to allow flexibility in the Kubernetes model mapping to the OpenStack. There
-can be different drivers that do Neutron resources management, i.e. create on
-demand or grab one from the precreated pool. There can be different drivers for
-the Project management, i.e. single Tenant or multiple. Same goes for the other
-drivers. There are drivers that handle the Pod based on the project, subnet
-and security groups specified via configuration settings during cluster
-deployment phase.
+Create service/endpoint with no ocp-route/ingress pointing to it:
 
-NeutronPodVifDriver
-~~~~~~~~~~~~~~~~~~~
-PodVifDriver subclass should implement request_vif, release_vif and
-activate_vif methods. In case request_vif returns Vif object in down state,
-Controller will invoke activate_vif.  Vif ‘active’ state is required by the
-CNI driver to complete pod handling.
-The NeutronPodVifDriver is the default driver that creates neutron port upon
-Pod addition and deletes port upon Pod removal.
+  * Service/Endpoint is created
+    * name: s1
+    * the Service and Endpoint controllers will create user loadbalancer
 
-CNI Driver
-----------
-Kuryr kubernetes integration takes advantage of the kubernetes `CNI plugin <http://kubernetes.io/docs/admin/network-plugins/#cni>`_
-and introduces Kuryr-K8s CNI Driver. Based on design decision, kuryr-kubernetes
-CNI Driver should get all information required to plug and bind Pod via
-kubernetes control plane and should not depend on Neutron. CNI plugin/driver
-is invoked in a blocking manner by kubelet (Kubernetes node agent), therefore it is
-expected to return when either success or error state determined.
+Create service/endpoint, ocp-route/ingress, delete ocp-route/ingress:
+
+  * Service/Endpoint is created
+    * name: s1
+    * the Service and Endpoint controllers will create user loadbalancer
+  * ocp-route is created
+    * ocp-route details :
+
+.. code-block:: yaml
+
+    apiVersion: v1
+    kind: Route
+    metadata:
+      name: test
+    spec:
+      host: www.example.com
+      to:
+        kind: Service
+        name: s1
+
+    * Since it's the first route pointing to this service, the ocp controller will
+      create LbaaS pool (attached to L7 router)- let's call it s1_pool.
+    * The ocp-route controller will create L7 rule and L7 policy, the L7 policy should direct it's filtered traffic
+       towards s1_pool.
+    * The last step from ocp-controller will be to notify (using annotation) s1 endpoint.
+    * As a result to the ocp-route notification, the endpoint handler will be called.
+      The endpoint handler will update members information attached to s1_pool and clear notification
+      (by deleting the annotation).
+  * ocp-route is deleted
+    * ocp-route controller will first delete L7 rule and L7 policy.
+    * In case no other L7 policy is pointing s1_pool, the ocp-controller will delete s1_pool and notify s1 endpoint
+       that no ocp-route is pointing to it.
+    * As a result to the ocp-route notification, the endpoint handler will 'clean' all the resources he allocated
+      to serve this routes.
+
 
 References
 ==========
