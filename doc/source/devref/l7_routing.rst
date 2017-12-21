@@ -128,6 +128,7 @@ A diagram describing L7 router entities is given below:
     :alt: L7 routing entities
     :align: center
     :width: 100%    
+
 Providers
 ~~~~~~~~~
 Provider (Drivers) are used by ResourceEventHandlers to manage specific aspects
