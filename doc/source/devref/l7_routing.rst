@@ -153,15 +153,21 @@ This section describes the detailed flow of the following scenarios:
 * Create service/endpoint with no ocp-route/ingress pointing to it.
 
   * Service/Endpoint is created
+  
     * name: s1
+    
     * the Service and Endpoint controllers will create user loadbalancer
 
 * Create service/endpoint, ocp-route/ingress, delete ocp-route/ingress:
 
   * Service/Endpoint is created
+  
     * name: s1
+    
     * the Service and Endpoint controllers will create user loadbalancer
+    
   * ocp-route is created
+  
     * ocp-route details :
 
 .. code-block:: yaml
@@ -176,19 +182,25 @@ This section describes the detailed flow of the following scenarios:
         kind: Service
         name: s1
 
-
     * Since it's the first route pointing to this service, the ocp controller will
       create LbaaS pool (attached to L7 router)- let's call it s1_pool.
+      
     * The ocp-route controller will create L7 rule and L7 policy, the L7 policy should direct it's filtered traffic
        towards s1_pool.
+       
     * The last step from ocp-controller will be to notify (using annotation) s1 endpoint.
+    
     * As a result to the ocp-route notification, the endpoint handler will be called.
       The endpoint handler will update members information attached to s1_pool and clear notification
       (by deleting the annotation).
+      
   * ocp-route is deleted
+  
     * ocp-route controller will first delete L7 rule and L7 policy.
+    
     * In case no other L7 policy is pointing s1_pool, the ocp-controller will delete s1_pool and notify s1 endpoint
        that no ocp-route is pointing to it.
+       
     * As a result to the ocp-route notification, the endpoint handler will 'clean' all the resources he allocated
       to serve this routes.
 
