@@ -70,7 +70,7 @@ The Router's FIP could be retrieved from node annotation's as appears below.
 
     metadata:
       annotations:
-        openstack.org/kuryr-l7-router-state: '{"versioned_object.data": {**"fip": "172.24.4.14"**,
+        openstack.org/kuryr-l7-router-state: '{"versioned_object.data": {"fip": "172.24.4.14",
         "router_lb": {"versioned_object.data": {"id": "90732f0a-651a-4b17-a14e-9b0e01fbe774",
         "ip": "10.0.0.154", "name": "kuryr-l7-router", "port_id": "5c71a29a-0dc1-461e-81ee-2258a7e3842d",
         "project_id": "868307936d384c21824e5eb0425a3f42", "subnet_id": "9f6d8c9f-d22d-480e-80f5-867daa050ff8"},
