@@ -150,13 +150,13 @@ This section describes the detailed flow of the following scenarios:
       and add/remove pod-ports from security-groups.
 
 
-Create service/endpoint with no ocp-route/ingress pointing to it:
+* Create service/endpoint with no ocp-route/ingress pointing to it.
 
   * Service/Endpoint is created
     * name: s1
     * the Service and Endpoint controllers will create user loadbalancer
 
-Create service/endpoint, ocp-route/ingress, delete ocp-route/ingress:
+* Create service/endpoint, ocp-route/ingress, delete ocp-route/ingress:
 
   * Service/Endpoint is created
     * name: s1
@@ -175,6 +175,7 @@ Create service/endpoint, ocp-route/ingress, delete ocp-route/ingress:
       to:
         kind: Service
         name: s1
+
 
     * Since it's the first route pointing to this service, the ocp controller will
       create LbaaS pool (attached to L7 router)- let's call it s1_pool.
