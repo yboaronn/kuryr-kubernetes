@@ -124,15 +124,10 @@ Note: Neutron LbaaS L7 functions are implemented *only* for the OCTAVIA provider
 the Neutron LbaaS must be configured to be OCTAVIA.
 
 A diagram describing L7 router entities is given below:
-
 .. image:: ../../images/l7_routing_neutron_entities.svg
     :alt: L7 routing entities
     :align: center
-    :width: 100%
-
-The blue components are created/released by the L7 router manager.
-The green components are created/released by ocp/ingress controller.
-The red components are created/released by endpoint controller.
+    :width: 100%    
 
 CNI Driver
 ----------
