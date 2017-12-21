@@ -134,9 +134,20 @@ Use cases examples
 ~~~~~~~~~~~~~~~~~~
 This section describes the detailed flow of the following scenarios:
 
-  * Create service/endpoint with no ocp-route/ingress pointing to it.
+  A. Create service/endpoint with no ocp-route/ingress pointing to it.
+  B. Create service/endpoint, ocp-route, delete ocp-route.
 
-  * Create service/endpoint, ocp-route, delete ocp-route.
+* Need to do some sync operation to make-sure Neutron topology is synchronised
+  with Kubernetes Network Policy model.
+
+  * for every network-policy, for each pod selector in the policy:
+
+    * get from kubernetes-api all pods that selected by this query.
+
+    * get all ports of the relevant security-groups.
+
+    * Do diff between port that needed to be attached to SG,
+      and add/remove pod-ports from security-groups.
 
 
 Create service/endpoint with no ocp-route/ingress pointing to it:
