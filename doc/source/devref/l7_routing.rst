@@ -185,8 +185,7 @@ This section describes the detailed flow of the following scenarios:
     * Since it's the first route pointing to this service, the ocp route controller will
       create LbaaS pool (attached to L7 router)- let's call it s1_pool.
       
-    * The ocp-route controller will create L7 rule and L7 policy, the L7 policy should direct it's filtered traffic
-       towards s1_pool.
+    * The ocp-route controller will create L7 rule and L7 policy, the L7 policy should direct it's filtered traffic towards s1_pool.
        
     * The last step from ocp-controller will be to notify (using annotation) s1 endpoint.
     
