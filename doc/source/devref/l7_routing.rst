@@ -170,17 +170,17 @@ This section describes the detailed flow of the following scenarios:
   
     * ocp-route details :
 
-.. code-block:: yaml
+    .. code-block:: yaml
 
-    apiVersion: v1
-    kind: Route
-    metadata:
-      name: test
-    spec:
-      host: www.example.com
-      to:
-        kind: Service
-        name: s1
+        apiVersion: v1
+        kind: Route
+        metadata:
+          name: test
+          spec:
+            host: www.example.com
+            to:
+              kind: Service
+              name: s1
 
     * Since it's the first route pointing to this service, the ocp controller will
       create LbaaS pool (attached to L7 router)- let's call it s1_pool.
