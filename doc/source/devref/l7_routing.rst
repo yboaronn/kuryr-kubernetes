@@ -182,7 +182,7 @@ This section describes the detailed flow of the following scenarios:
               kind: Service
               name: s1
 
-    * Since it's the first route pointing to this service, the ocp controller will
+    * Since it's the first route pointing to this service, the ocp route controller will
       create LbaaS pool (attached to L7 router)- let's call it s1_pool.
       
     * The ocp-route controller will create L7 rule and L7 policy, the L7 policy should direct it's filtered traffic
@@ -197,7 +197,9 @@ This section describes the detailed flow of the following scenarios:
   * ocp-route is deleted
   
     * ocp-route controller will first delete L7 rule and L7 policy.
-    
+  
+    * In case no other L7 policy is pointing s1_pool, the ocp-controller will delete s1_pool and notify s1 endpoint that no ocp-route is pointing to it.
+        
     * In case no other L7 policy is pointing s1_pool, the ocp-controller will delete s1_pool and notify s1 endpoint
        that no ocp-route is pointing to it.
        
