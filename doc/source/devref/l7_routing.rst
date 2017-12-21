@@ -199,10 +199,7 @@ This section describes the detailed flow of the following scenarios:
     * ocp-route controller will first delete L7 rule and L7 policy.
   
     * In case no other L7 policy is pointing s1_pool, the ocp-controller will delete s1_pool and notify s1 endpoint that no ocp-route is pointing to it.
-        
-    * In case no other L7 policy is pointing s1_pool, the ocp-controller will delete s1_pool and notify s1 endpoint
-       that no ocp-route is pointing to it.
-       
+               
     * As a result to the ocp-route notification, the endpoint handler will 'clean' all the resources he allocated
       to serve this routes.
 
