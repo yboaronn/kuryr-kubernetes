@@ -33,7 +33,7 @@ Proposed Solution
 -----------------
 An OpenShift/Kubernetes administrator can deploy L7 router in an OpenShift/Kubernetes cluster,
 which enable ingress/ocp-routes created by developers to be used by external clients.
-The Router should perform L7 routing layer based on L7 rules database, where the ingress/ocp-route
+The Router should perform L7 routing based on L7 rules database, where the ingress/ocp-route
 and endpoints controllers are responsible for updating the L7 rules database.
 Kuryr will use neutron LbaaS L7 policy capability [3]_ to perform this task.
 
@@ -50,9 +50,9 @@ The L7 Router manager
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 The L7 router manager is responsible for create/get L7 routers,
 A L7 router is the entity that responsible to perform the actual L7 routing/URL mapping,
-based on rules database.
+based on the rules database.
 When an HTTP/HTTPS packet hits the L7 router, the L7 router uses its rules databse
-to determine the destination (based on the fields content in HTTP header,e.g: HOST_NAME, PATH).
+to determine the endpoint destination (based on the fields content in HTTP header,e.g: HOST_NAME, PATH).
 
 In Kuryr context, the L7 router is actually an externally reachable loadbalancer; for achieving external connectivity
 a floating IP (allocated from 'external_svc_subnet') is bounded to the Router loadbalancer.
@@ -104,7 +104,7 @@ L7 router, and the rules on the Ingress/ocp-route become L7 (URL)
 mapping rules in that L7 policy.
 The L7 policy is configured to forward the filtered traffic to LbaaS Pool.
 The LbaaS pool represents an Endpoint resource, and it's the Endpoint controller responsibility
-to attach all Endpoint's members to this pool.
+to attach all the Endpoint's members to this pool.
 Since the Endpoint resource is not aware to changes in ingress/ocp-route objects pointing to it, the ingress/ocp-route
 controller should trigger this notification, the notification will e implemented using annotation.
 
@@ -112,19 +112,19 @@ Endpoint controller
 ~~~~~~~~~~~~~~~~~~~~~
 The Endpoint controller should be extended to support the flows involving
 route/ingress resources.
-The Endpoint controller should add/delete all it's members to/from the LbaaS pool mentioned above, in case
+The Endpoint controller should add/delete all its members to/from the LbaaS pool mentioned above, in case
 a route/ingress is pointing this Endpoint as it's destination.
 
 The L7 router driver
 ~~~~~~~~~~~~~~~~~~~~~
 The L7 router manager, ingress/ocp-route controllers and endpoint controller will call the L7 router driver services
 to create the L7 routing entities chain.
-The L7 router will rely on neutron LbaaS functionality.
+The L7 router driver will rely on neutron LbaaS functionality.
 
 **Note:** Neutron LbaaS L7 functions are implemented *only* for the OCTAVIA provider, in case L7 routing is required
 the Neutron LbaaS provider must be configured to be OCTAVIA.
 
-A diagram describing L7 router entities is given below:
+A diagram describing L7 router driver entities is given below:
 
 .. image:: ../../images/l7_routing_neutron_entities.svg
     :alt: L7 routing entities
@@ -135,31 +135,16 @@ A diagram describing L7 router entities is given below:
 - The green components are created/released by ocp/ingress controller.
 - The red components are created/released by endpoint controller.
 
-
 Use cases examples
 ~~~~~~~~~~~~~~~~~~
 This section describes the detailed flow of the following scenarios:
 
-  A. Create service/endpoint with no ocp-route/ingress pointing to it.
-  B. Create service/endpoint, ocp-route, delete ocp-route.
+  A. Create ocp-route/ingress, create service/endpoint.
+  B. Create service/endpoint, create ocp-route, delete ocp-route.
 
-* Create service/endpoint with no ocp-route/ingress pointing to it.
+* Create ocp-route/ingress, create service/endpoint:
 
-  * Service/Endpoint is created
-  
-    * name: s1
-    
-    * the Service and Endpoint controllers will create user loadbalancer
-
-* Create service/endpoint, ocp-route/ingress, delete ocp-route/ingress:
-
-  * Service/Endpoint is created
-  
-    * name: s1
-    
-    * the Service and Endpoint controllers will create user loadbalancer
-    
-  * ocp-route is created
+  * ocp-route is created under namespace 'mynamespace'
   
     * ocp-route details :
 
@@ -176,6 +161,30 @@ This section describes the detailed flow of the following scenarios:
               name: s1
 
     * Since it's the first route pointing to this service, the ocp route controller will
+      create LbaaS pool (attached to L7 router)- named 'mynamespace_s1'.
+      
+    * The ocp-route controller will create L7 rule and L7 policy, the L7 policy direct it's filtered traffic towards s1_pool.
+      
+  * Service/Endpoint is created under namespace 'mynamespace'
+  
+    * name: s1
+    
+    * The Service and Endpoint controllers will create user loadbalancer
+      
+    * The Endpoint controller will check for pool named 'mynamespace_s1' and add its members to this pool.
+    
+* Create service/endpoint, create ocp-route/ingress, delete ocp-route/ingress:
+
+  * Service/Endpoint is created under namespace 'mynamespace'
+  
+    * name: s1
+    
+    * The Service and Endpoint controllers will create user loadbalancer
+    * Since no pool named 'mynamespace_s1' exist in L7 router, service will exit.
+       
+  * ocp-route is created same details as described in above yaml file.
+  
+    * Since it's the first route pointing to this service, the ocp route controller will
       create LbaaS pool (attached to L7 router)- let's call it s1_pool.
       
     * The ocp-route controller will create L7 rule and L7 policy, the L7 policy should direct it's filtered traffic towards s1_pool.
@@ -183,7 +192,7 @@ This section describes the detailed flow of the following scenarios:
     * The last step from ocp-controller will be to notify (using annotation) s1 endpoint.
     
     * As a result to the ocp-route notification, the endpoint handler will be called.
-      The endpoint handler will update members information attached to s1_pool and clear notification
+      The endpoint handler will update the members information attached to 'mynamespace_s1' pool and clear notification
       (by deleting the annotation).
       
   * ocp-route is deleted
