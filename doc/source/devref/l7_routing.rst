@@ -40,6 +40,7 @@ Kuryr will use neutron LbaaS L7 policy capability [3]_ to perform this task.
 Controller Handlers and Drivers impact:
 ---------------------------------------
 The controller part will be composed of the following :
+
 1. L7 Router manager
 2. Ingress/ocp-route controllers.
 3. Endpoint controller
