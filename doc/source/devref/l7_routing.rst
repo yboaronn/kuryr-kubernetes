@@ -130,9 +130,8 @@ A diagram describing L7 router driver entities is given below:
     :alt: L7 routing entities
     :align: center
     :width: 100%    
-
 - The blue components are created/released by the L7 router manager.
-- The green components are created/released by ocp/ingress controller.
+- The green components are created/released by ocp-route/ingress controller.
 - The red components are created/released by endpoint controller.
 
 Use cases examples
