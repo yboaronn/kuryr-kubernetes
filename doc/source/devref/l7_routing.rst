@@ -13,7 +13,7 @@
     (Avoid deeper levels because they do not render well.)
 
 =========================================================
-Kuryr Kubernetes ocp-route And Ingress Integration Design
+Kuryr Kubernetes ocp-route and ingress integration design
 =========================================================
 
 Purpose
@@ -26,7 +26,7 @@ Overview
 An OpenShift route [1]_ and Kubernetes ingress [2]_ are used to give services externally-reachable URLs,
 load balance traffic, terminate SSL, offer name based virtual hosting, and more.
 Each route/ingress consists of a name, service identifier, and (optionally) security configuration.
-A defined route/ingress and the endpoints identified by its service are consumed by a L7-router
+A defined ocp-route/ingress and the endpoints identified by its service are consumed by a L7-router
 to provide named connectivity that allows external clients to reach your applications.
 
 Proposed Solution
@@ -99,7 +99,7 @@ The following scheme describe ingress/ocp-route controller SW architecture:
     :align: center
     :width: 100%
 
-Each Ingress/ocp-route being translated to a L7 policy in
+Each ingress/ocp-route being translated to a L7 policy in
 L7 router, and the rules on the Ingress/ocp-route become L7 (URL)
 mapping rules in that L7 policy.
 The L7 policy is configured to forward the filtered traffic to LbaaS Pool.
@@ -182,14 +182,13 @@ This section describes the detailed flow of the following scenarios:
     * The Service and Endpoint controllers will create user loadbalancer
     * Since no pool named 'mynamespace_s1' exist in L7 router, service will exit.
        
-  * ocp-route is created same details as described in above yaml file.
+  * ocp-route is created with same details as described in above yaml file.
   
     * Since it's the first route pointing to this service, the ocp route controller will
-      create LbaaS pool (attached to L7 router)- let's call it s1_pool.
-      
-    * The ocp-route controller will create L7 rule and L7 policy, the L7 policy should direct it's filtered traffic towards s1_pool.
+      create LbaaS pool (attached to L7 router) named 'mynamespace_s1'.      
+    * The ocp-route controller will create L7 rule and L7 policy, the L7 policy configured to direct its filtered traffic towards 'mynamespace_s1' pool.
        
-    * The last step from ocp-controller will be to notify (using annotation) s1 endpoint.
+    * The last step from ocp-route controller will be to notify (using annotation) s1 endpoint.
     
     * As a result to the ocp-route notification, the endpoint handler will be called.
       The endpoint handler will update the members information attached to 'mynamespace_s1' pool and clear notification
@@ -199,10 +198,10 @@ This section describes the detailed flow of the following scenarios:
   
     * ocp-route controller will first delete L7 rule and L7 policy.
   
-    * In case no other L7 policy is pointing s1_pool, the ocp-controller will delete s1_pool and notify s1 endpoint that no ocp-route is pointing to it.
+    * In case no other L7 policy is pointing 'mynamespace_s1', the ocp-route controller will delete 'mynamespace_s1' pool and notify s1 endpoint that no ocp-route is pointing to it.
                
-    * As a result to the ocp-route notification, the endpoint handler will 'clean' all the resources he allocated
-      to serve this routes.
+    * As a result to the ocp-route controller notification, the endpoint handler will 'clean' all the resources he allocated
+      to serve this route.
 
 
 References
