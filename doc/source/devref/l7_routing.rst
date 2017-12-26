@@ -23,7 +23,7 @@ by the kuryr integration.
 
 Overview
 ----------
-A Kubernetes ingress [2]_ are used to give services externally-reachable URLs,
+A Kubernetes ingress [1]_ are used to give services externally-reachable URLs,
 load balance traffic, terminate SSL, offer name based virtual hosting, and more.
 Each ingress consists of a name, service identifier, and (optionally) security configuration.
 A defined ingress and the endpoints identified by its service are consumed by a L7-router
@@ -35,7 +35,7 @@ A Kubernetes administrator can deploy L7 router in an Kubernetes cluster,
 which enable ingress resources created by developers to be used by external clients.
 The Router should perform L7 routing based on L7 rules database, where the ingress
 and endpoints controllers are responsible for updating the L7 rules database.
-Kuryr will use neutron LbaaS L7 policy capability [3]_ to perform this task.
+Kuryr will use neutron LbaaS L7 policy capability [2]_ to perform this task.
 
 Controller Handlers and Drivers impact:
 ---------------------------------------
@@ -61,7 +61,7 @@ The following parameters should be configured in kuryr.conf file to enable L7 Ro
          [neutron_defaults]
          external_svc_subnet=external_subnet_id
          [kubernetes]
-         l7_router_driver= neutron_l7_policy
+         enable_l7_router = True
 
 After the L7 router was created, we should retrieve the Router's FIP,
 and point (at DNS) external traffic to L7 Router(FIP).
@@ -99,21 +99,19 @@ The following scheme describe ingress controller SW architecture:
     :align: center
     :width: 100%
 
-Each ingress being translated to a L7 policy in
-L7 router, and the rules on the Ingress become L7 (URL)
+Each ingress being translated to a L7 policy in L7 router, and the rules on the Ingress become L7 (URL)
 mapping rules in that L7 policy.
 The L7 policy is configured to forward the filtered traffic to LbaaS Pool.
 The LbaaS pool represents an Endpoint resource, and it's the Endpoint controller responsibility
 to attach all the Endpoint's members to this pool.
 Since the Endpoint resource is not aware to changes in ingress objects pointing to it, the ingress
-controller should trigger this notification, the notification will e implemented using annotation.
+controller should trigger this notification, the notification will be implemented using annotation.
 
 Endpoint controller
 ~~~~~~~~~~~~~~~~~~~~~
-The Endpoint controller should be extended to support the flows involving
-route/ingress resources.
+The Endpoint controller should be extended to support the flows involving ingress resources.
 The Endpoint controller should add/delete all its members to/from the LbaaS pool mentioned above, in case
-a route/ingress is pointing this Endpoint as it's destination.
+an ingress is pointing this Endpoint as it's destination.
 
 The L7 router driver
 ~~~~~~~~~~~~~~~~~~~~~
@@ -130,7 +128,7 @@ A diagram describing L7 router driver entities is given below:
     :alt: L7 routing entities
     :align: center
     :width: 100%    
-- The blue components are created/released by the L7 router manager.
+- The blue components are created/released by L7 router manager.
 - The green components are created/released by ingress controller.
 - The red components are created/released by endpoint controller.
 
@@ -162,7 +160,7 @@ This section describes the detailed flow of the following scenarios:
                 serviceName: s1
                 servicePort: 80
         
-    * Since it's the first route pointing to this service, the ingress controller will
+    * Since it's the first ingress pointing to this service, the ingress controller will
       create LbaaS pool (attached to L7 router)- named 'mynamespace_s1'.
       
     * The ingress controller will create L7 rule and L7 policy, the L7 policy direct it's filtered traffic towards s1_pool.
@@ -186,7 +184,7 @@ This section describes the detailed flow of the following scenarios:
        
   * Ingress is created with same details as described in above yaml file.
   
-    * Since it's the first route pointing to this service, the ingress controller will
+    * Since it's the first ingress pointing to this service, the ingress controller will
       create LbaaS pool (attached to L7 router) named 'mynamespace_s1'.      
     * The ingress controller will create L7 rule and L7 policy, the L7 policy configured to direct its filtered traffic towards 'mynamespace_s1' pool.
        
@@ -208,6 +206,5 @@ This section describes the detailed flow of the following scenarios:
 
 References
 ==========
-.. [1] https://docs.openshift.com/enterprise/3.0/architecture/core_concepts/routes.html
-.. [2] https://kubernetes.io/docs/concepts/services-networking/ingress/#what-is-ingress
-.. [3] https://wiki.openstack.org/wiki/Neutron/LBaaS/l7
+.. [1] https://kubernetes.io/docs/concepts/services-networking/ingress/#what-is-ingress
+.. [2] https://wiki.openstack.org/wiki/Neutron/LBaaS/l7
