@@ -13,27 +13,27 @@
     (Avoid deeper levels because they do not render well.)
 
 =========================================================
-Kuryr Kubernetes ocp-route and ingress integration design
+Kuryr Kubernetes ingress integration design
 =========================================================
 
 Purpose
 -------
-The purpose of this document is to present how openshift route and Kubernetes ingress are supported
+The purpose of this document is to present how Kubernetes ingress is supported
 by the kuryr integration.
 
 Overview
 ----------
-An OpenShift route [1]_ and Kubernetes ingress [2]_ are used to give services externally-reachable URLs,
+A Kubernetes ingress [2]_ are used to give services externally-reachable URLs,
 load balance traffic, terminate SSL, offer name based virtual hosting, and more.
-Each route/ingress consists of a name, service identifier, and (optionally) security configuration.
-A defined ocp-route/ingress and the endpoints identified by its service are consumed by a L7-router
+Each ingress consists of a name, service identifier, and (optionally) security configuration.
+A defined ingress and the endpoints identified by its service are consumed by a L7-router
 to provide named connectivity that allows external clients to reach your applications.
 
 Proposed Solution
 -----------------
-An OpenShift/Kubernetes administrator can deploy L7 router in an OpenShift/Kubernetes cluster,
-which enable ingress/ocp-routes created by developers to be used by external clients.
-The Router should perform L7 routing based on L7 rules database, where the ingress/ocp-route
+A Kubernetes administrator can deploy L7 router in an Kubernetes cluster,
+which enable ingress resources created by developers to be used by external clients.
+The Router should perform L7 routing based on L7 rules database, where the ingress
 and endpoints controllers are responsible for updating the L7 rules database.
 Kuryr will use neutron LbaaS L7 policy capability [3]_ to perform this task.
 
@@ -42,7 +42,7 @@ Controller Handlers and Drivers impact:
 The controller part will be composed of the following :
 
 1. L7 Router manager
-2. Ingress/ocp-route controllers.
+2. Ingress controller.
 3. Endpoint controller
 
 
@@ -88,24 +88,24 @@ The next diagram illustrates data flow from external user to L7 loadbalancer:
     :align: center
     :width: 100%
 
-Ingress/OCP-Route controllers
+Ingress controller
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The ingress/ocp-route controller watches the apiserver's for updates to
-the Ingress/ocp-route. Its job is to satisfy requests for Ingresses/ocp-route.
-The following scheme describe ingress/ocp-route controller SW architecture:
+The ingress controller watches the apiserver's for updates to
+the Ingress. Its job is to satisfy requests for Ingresses.
+The following scheme describe ingress controller SW architecture:
 
-.. image:: ../../images/kuryr_k8s_route_ctrl_sw.svg
-    :alt: Ingress/OCP-Route controllers SW architecture
+.. image:: ../../images/kuryr_k8s_ingress_ctrlr_sw.svg
+    :alt: Ingress controller SW architecture
     :align: center
     :width: 100%
 
-Each ingress/ocp-route being translated to a L7 policy in
-L7 router, and the rules on the Ingress/ocp-route become L7 (URL)
+Each ingress being translated to a L7 policy in
+L7 router, and the rules on the Ingress become L7 (URL)
 mapping rules in that L7 policy.
 The L7 policy is configured to forward the filtered traffic to LbaaS Pool.
 The LbaaS pool represents an Endpoint resource, and it's the Endpoint controller responsibility
 to attach all the Endpoint's members to this pool.
-Since the Endpoint resource is not aware to changes in ingress/ocp-route objects pointing to it, the ingress/ocp-route
+Since the Endpoint resource is not aware to changes in ingress objects pointing to it, the ingress
 controller should trigger this notification, the notification will e implemented using annotation.
 
 Endpoint controller
@@ -117,7 +117,7 @@ a route/ingress is pointing this Endpoint as it's destination.
 
 The L7 router driver
 ~~~~~~~~~~~~~~~~~~~~~
-The L7 router manager, ingress/ocp-route controllers and endpoint controller will call the L7 router driver services
+The L7 router manager, ingress controller and endpoint controller will call the L7 router driver services
 to create the L7 routing entities chain.
 The L7 router driver will rely on neutron LbaaS functionality.
 
@@ -131,38 +131,41 @@ A diagram describing L7 router driver entities is given below:
     :align: center
     :width: 100%    
 - The blue components are created/released by the L7 router manager.
-- The green components are created/released by ocp-route/ingress controller.
+- The green components are created/released by ingress controller.
 - The red components are created/released by endpoint controller.
 
 Use cases examples
 ~~~~~~~~~~~~~~~~~~
 This section describes the detailed flow of the following scenarios:
 
-  A. Create ocp-route/ingress, create service/endpoint.
-  B. Create service/endpoint, create ocp-route, delete ocp-route.
+  A. Create ingress, create service/endpoint.
+  B. Create service/endpoint, create ingress, delete ingress.
 
-* Create ocp-route/ingress, create service/endpoint:
+* Create ingress, create service/endpoint:
 
-  * ocp-route is created under namespace 'mynamespace'
+  * ingress is created under namespace 'mynamespace'
   
-    * ocp-route details :
+    * ingress details :
 
     .. code-block:: yaml
 
-        apiVersion: v1
-        kind: Route
+        apiVersion: extensions/v1beta1
+        kind: Ingress
         metadata:
-          name: test
-          spec:
-            host: www.example.com
-            to:
-              kind: Service
-              name: s1
-
-    * Since it's the first route pointing to this service, the ocp route controller will
+        name: test
+        spec:
+        rules:
+        - host: www.example.com
+            http:
+            paths:
+            - backend:
+                serviceName: s1
+                servicePort: 80
+        
+    * Since it's the first route pointing to this service, the ingress controller will
       create LbaaS pool (attached to L7 router)- named 'mynamespace_s1'.
       
-    * The ocp-route controller will create L7 rule and L7 policy, the L7 policy direct it's filtered traffic towards s1_pool.
+    * The ingress controller will create L7 rule and L7 policy, the L7 policy direct it's filtered traffic towards s1_pool.
       
   * Service/Endpoint is created under namespace 'mynamespace'
   
@@ -172,7 +175,7 @@ This section describes the detailed flow of the following scenarios:
       
     * The Endpoint controller will check for pool named 'mynamespace_s1' and add its members to this pool.
     
-* Create service/endpoint, create ocp-route/ingress, delete ocp-route/ingress:
+* Create service/endpoint, create ingress, delete ingress:
 
   * Service/Endpoint is created under namespace 'mynamespace'
   
@@ -181,25 +184,25 @@ This section describes the detailed flow of the following scenarios:
     * The Service and Endpoint controllers will create user loadbalancer
     * Since no pool named 'mynamespace_s1' exist in L7 router, service will exit.
        
-  * ocp-route is created with same details as described in above yaml file.
+  * Ingress is created with same details as described in above yaml file.
   
-    * Since it's the first route pointing to this service, the ocp route controller will
+    * Since it's the first route pointing to this service, the ingress controller will
       create LbaaS pool (attached to L7 router) named 'mynamespace_s1'.      
-    * The ocp-route controller will create L7 rule and L7 policy, the L7 policy configured to direct its filtered traffic towards 'mynamespace_s1' pool.
+    * The ingress controller will create L7 rule and L7 policy, the L7 policy configured to direct its filtered traffic towards 'mynamespace_s1' pool.
        
-    * The last step from ocp-route controller will be to notify (using annotation) s1 endpoint.
+    * The last step from ingress controller will be to notify (using annotation) s1 endpoint.
     
-    * As a result to the ocp-route notification, the endpoint handler will be called.
+    * As a result to the ingress notification, the endpoint handler will be called.
       The endpoint handler will update the members information attached to 'mynamespace_s1' pool and clear notification
       (by deleting the annotation).
       
-  * ocp-route is deleted
+  * Ingress is deleted
   
-    * ocp-route controller will first delete L7 rule and L7 policy.
+    * Ingress controller will first delete L7 rule and L7 policy.
   
-    * In case no other L7 policy is pointing 'mynamespace_s1', the ocp-route controller will delete 'mynamespace_s1' pool and notify s1 endpoint that no ocp-route is pointing to it.
+    * In case no other L7 policy is pointing 'mynamespace_s1', the ingress controller will delete 'mynamespace_s1' pool and notify s1 endpoint that no ingress is pointing to it.
                
-    * As a result to the ocp-route controller notification, the endpoint handler will 'clean' all the resources he allocated
+    * As a result to the ingress controller notification, the endpoint handler will 'clean' all the resources he allocated
       to serve this route.
 
 
